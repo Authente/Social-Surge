@@ -1,2 +1,1 @@
-# Social-Surge
-Instagram analytics MVP for creators
+# Social Surge
