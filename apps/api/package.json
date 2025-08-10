@@ -1,0 +1,14 @@
+{
+  "name": "api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js || echo \"api dev placeholder\"",
+    "build": "echo \"api build ok\"",
+    "start": "node server.js || echo \"api start placeholder\""
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

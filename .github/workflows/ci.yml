@@ -1,11 +1,12 @@
 name: ci
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
 jobs:
   bootstrap:
     runs-on: ubuntu-latest
     steps:
-      - name: CI bootstrap
-        run: echo "OK"
+      - uses: actions/checkout@v4
+      - run: npm run check
+      - run: npm run build
