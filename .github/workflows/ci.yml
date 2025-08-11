@@ -1,35 +1,74 @@
 name: ci
+
 on:
   pull_request:
   push:
     branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  bootstrap:
+  setup:
+    name: setup
+    runs-on: ubuntu-latest
+    outputs:
+      node: ${{ steps.meta.outputs.node }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: meta
+        run: echo "node=22" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.meta.outputs.node }}
+          cache: npm
+      - name: Install (workspaces)
+        run: npm ci
+
+  lint:
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      # Web (Next.js)
-name: ci
-on:
-  pull_request:
-  push:
-    branches: [main]
-jobs:
-  bootstrap:
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --prefer-offline
+      - run: npm run lint
+
+  typecheck:
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --prefer-offline
+      - run: npm run typecheck
+
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --prefer-offline
+      - run: npm test --workspaces
+      - name: Upload coverage (API)
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          node-version: 22
+          name: coverage-api
+          path: apps/api/coverage/**
+          if-no-files-found: ignore
 
-      # Web (Next.js)
-      - run: npm ci --prefix apps/web --no-audit --no-fund
-      - run: npm run build --prefix apps/web
-
-      # API (TS)
-      - run: npm ci --prefix apps/api --no-audit --no-fund
-      - run: npm run build --prefix apps/api
+  build:
+    needs: [lint, typecheck, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --prefer-offline
+      - run: npm run build
