@@ -3,20 +3,23 @@
   "private": true,
   "version": "0.1.0",
   "packageManager": "npm@10",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "npm-run-all -p dev:web dev:api",
     "dev:web": "npm --workspace apps/web run dev",
     "dev:api": "npm --workspace apps/api run dev",
-    "build": "npm-run-all build:web build:api",
+    "build": "npm run build --prefix ./apps/web && npm run build --prefix ./apps/api",
     "build:web": "npm --workspace apps/web run build",
     "build:api": "npm --workspace apps/api run build",
     "start": "npm-run-all -p start:api start:web",
     "start:web": "npm --workspace apps/web run start",
     "start:api": "npm --workspace apps/api run start",
-    "lint": "echo \"lint ok\"",
-    "typecheck": "echo \"typecheck ok\"",
-    "test": "node -e \"process.exit(0)\"",
+    "lint": "npm run lint --prefix ./apps/web && npm run lint --prefix ./apps/api",
+    "typecheck": "npm run typecheck --prefix ./apps/web && npm run typecheck --prefix ./apps/api",
+    "test": "npm run test --prefix ./apps/api",
     "check": "npm run lint && npm run typecheck && npm test"
   },
   "devDependencies": {
